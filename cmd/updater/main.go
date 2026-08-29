@@ -46,7 +46,8 @@ func main() {
 	}
 
 	ui.Setup(cfg.Runtime.Headless)
-	closer, err := logger.Init(cfg.Runtime.LogFile, cfg.Runtime.Headless)
+	prog := ui.NewProgress(!cfg.Runtime.Headless)
+	closer, err := logger.Init(cfg.Runtime.LogFile, cfg.Runtime.Headless, prog.Clear)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "logger init error: %v\n", err)
 		exitCode = 1
@@ -55,8 +56,9 @@ func main() {
 	if closer != nil {
 		defer closer.Close()
 	}
+	logger.Infof("config loaded: version=%d target=%s", int(cfg.Version), cfg.Update.Target)
 
-	exitCode = runner.Run(cfg)
+	exitCode = runner.Run(cfg, prog)
 	ui.Teardown()
 }
 
