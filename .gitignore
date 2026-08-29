@@ -1,0 +1,39 @@
+# IDE
+.idea/
+*.iml
+
+# Agent / tool data
+.agent/
+.omp/
+
+# Codegraph (local DB, daemon logs)
+.codegraph/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Build output
+release/Local/
+release/CI/
+
+# Docs (internal / prompt drafts)
+docs/prompt
+
+# Environment & secrets
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Go build output
+*.exe
+*.dll
+*.exe~
