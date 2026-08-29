@@ -1,0 +1,17 @@
+{
+    "version": "",
+    "schemaVersion": "1",
+    "publishTimestamp": "ms",
+    "windows": {
+        "x86_64": {
+            "url": "",
+            "sha256": "",
+            "size": "bytes"
+        },
+        "arm64": {
+            "url": "",
+            "sha256": "",
+            "size": "bytes"
+        }
+    }
+}
