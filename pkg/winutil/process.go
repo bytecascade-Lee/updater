@@ -8,6 +8,10 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+// STILL_ACTIVE 是进程仍在运行时的退出码（GetExitCodeProcess 返回 0x103）。
+// golang.org/x/sys 未导出该常量，此处自行定义。
+const STILL_ACTIVE = 259
+
 // ProcessExists 检查 pid 对应的进程是否存在。
 func ProcessExists(pid int) bool {
 	if pid <= 0 {
@@ -18,8 +22,13 @@ func ProcessExists(pid int) bool {
 		// ERROR_INVALID_PARAMETER 表示进程不存在；其余错误（如拒绝访问）视为存在。
 		return !errors.Is(err, windows.ERROR_INVALID_PARAMETER)
 	}
-	windows.CloseHandle(h)
-	return true
+	defer windows.CloseHandle(h)
+	// OpenProcess 在进程被终止后仍可能成功（对象残留），须用退出码判断真正存活。
+	var exitCode uint32
+	if err := windows.GetExitCodeProcess(h, &exitCode); err != nil {
+		return false
+	}
+	return exitCode == STILL_ACTIVE
 }
 
 // KillProcess 强制终止 pid 对应的进程。
