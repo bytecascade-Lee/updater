@@ -9,11 +9,13 @@ import (
 
 	"updater/internal/config"
 	"updater/internal/logger"
+	"updater/internal/ui"
 	"updater/pkg/winutil"
 )
 
 // ExecuteLaunch 构建并启动新进程，按 lifecycle.stayAlive 决定分离、守护或驻留行为。
-func ExecuteLaunch(l *config.Launch) error {
+func ExecuteLaunch(l *config.Launch, prog *ui.Progress) error {
+	logger.Infof("launch stage started: mode=%s path=%s stayAlive=%d captureOutput=%v", l.Execution.Mode, l.Execution.Path, l.Lifecycle.StayAlive, l.Lifecycle.CaptureOutput)
 	exe := l.Execution
 
 	// 启动前检查 path 存在
@@ -51,11 +53,14 @@ func ExecuteLaunch(l *config.Launch) error {
 			return fmt.Errorf("start detached process: %w", err)
 		}
 		logger.Infof("launched detached process (pid %d); updater exits", cmd.Process.Pid)
+		prog.Update("[launch] process %d launched (detached)", cmd.Process.Pid)
 		return nil
 	}
 
 	// 驻留模式：captureOutput 时接管 stdout/stderr（stayAlive=0 时强制忽略）
 	if l.Lifecycle.CaptureOutput {
+		// capture 模式：子进程输出将写入日志，进度条不再显示
+		prog.Finish()
 		w := logger.Writer()
 		cmd.Stdout = w
 		cmd.Stderr = w
@@ -64,6 +69,7 @@ func ExecuteLaunch(l *config.Launch) error {
 		return fmt.Errorf("start process: %w", err)
 	}
 	logger.Infof("launched process (pid %d) in stay-alive mode (%dms)", cmd.Process.Pid, l.Lifecycle.StayAlive)
+	prog.Update("[launch] process %d running (stayAlive=%dms)", cmd.Process.Pid, l.Lifecycle.StayAlive)
 
 	if l.Lifecycle.StayAlive < 0 {
 		// 无限等待
@@ -87,6 +93,7 @@ func ExecuteLaunch(l *config.Launch) error {
 		return nil
 	case <-time.After(time.Duration(l.Lifecycle.StayAlive) * time.Millisecond):
 		logger.Infof("stayAlive %dms elapsed; updater exits, process (pid %d) keeps running", l.Lifecycle.StayAlive, cmd.Process.Pid)
+		prog.Update("[launch] stayAlive %dms elapsed, updater exits", l.Lifecycle.StayAlive)
 		return nil
 	}
 }
