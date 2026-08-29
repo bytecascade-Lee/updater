@@ -41,15 +41,9 @@ jobs:
                 run: uv run python -c "import sys; sys.path.insert(0, 'scripts'); from release_ci import ci_version; ci_version()"
 
     build:
-        name: Build & upload assets (${{ matrix.target }})
+        name: Build & upload assets
         needs: validate
         runs-on: windows-latest
-        strategy:
-            fail-fast: false
-            matrix:
-                target:
-                    - x86_64
-                    - arm64
         steps:
             -   name: Checkout
                 uses: actions/checkout@v4
@@ -65,16 +59,30 @@ jobs:
                     go-version-file: go.mod
 
             # 版本号/arch/产物命名全部由 release_ci.py 从 GitHub 环境变量推导，workflow 不再重复实现
-            -   name: Build & package
+            # 两个架构在同一 job 内串行构建；产物文件名含架构名（updater-<版本>-windows-<架构>.exe），互不覆盖
+            -   name: Build x86_64
                 env:
                     INPUT_VERSION: ${{ inputs.version }}
-                run: uv run python scripts/release_ci.py build --target ${{ matrix.target }}
+                run: uv run python scripts/release_ci.py build --target x86_64
 
-            -   name: Upload artifacts
+            -   name: Build arm64
+                env:
+                    INPUT_VERSION: ${{ inputs.version }}
+                run: uv run python scripts/release_ci.py build --target arm64
+
+            # 各架构上传独立 artifact（name 区分），避免同名覆盖；release job 以 release-assets-* 下载合并
+            -   name: Upload x86_64 assets
                 uses: actions/upload-artifact@v7
                 with:
-                    name: release-assets-${{ matrix.target }}
-                    path: updater-*-windows-*.exe
+                    name: release-assets-x86_64
+                    path: updater-*-windows-x86_64.exe
+                    if-no-files-found: error
+
+            -   name: Upload arm64 assets
+                uses: actions/upload-artifact@v7
+                with:
+                    name: release-assets-arm64
+                    path: updater-*-windows-arm64.exe
                     if-no-files-found: error
 
     release:
