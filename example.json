@@ -2,41 +2,44 @@
   "version": 1,
   "runtime": {
     "headless": false,
-    "logFile": "C:/logs/updater.log"
+    "logFile": ""
   },
   "wait": {
     "pid": 1234,
     "timeout": 10000,
-    "forceKillAfterTimeout": true,
-    "checkInterval": 300
+    "forceKill": true,
+    "interval": 500
   },
   "update": {
-    "source": "C:/new_app",
-    "target": "C:/app",
-    "preserve": ["C:/app/data", "C:/app/config.json"],
+    "source": "",
+    "target": "",
+    "preserve": [],
     "cleanBeforeCopy": true,
-    "backup": true,
-    "backupLocation": "C:/backups/app_bak"
+    "backup": {
+      "enabled": true,
+      "location": "",
+      "exclude": []
+    }
   },
   "launch": {
     "execution": {
       "mode": "direct",
-      "path": "app.exe",
+      "path": "",
       "interpreter": []
     },
     "context": {
-      "workspace": "C:/app",
-      "args": ["--port", "8080"],
-      "env": { "RUST_LOG": "INFO" }
+      "workspace": "",
+      "args": [],
+      "env": {}
     },
     "lifecycle": {
-      "stayAlive": 0,
-      "captureOutput": false
+      "stayAlive": -1,
+      "captureOutput": true
     }
   },
   "rollback": {
     "enabled": true,
-    "fallbackExecutable": "C:/app/old_app.exe",
+    "fallbackExecutable": "",
     "maxAttempts": 2
   }
 }
