@@ -15,7 +15,7 @@ var log *logrus.Logger
 // headless=true 只写 logFile；false 双写控制台与 logFile；
 // logFile 为空且 headless=true 时禁用全部输出。
 // 返回日志文件（调用方负责关闭），未打开文件时返回 nil。
-func Init(logFile string, headless bool) (io.Closer, error) {
+func Init(logFile string, headless bool, clearLine func()) (io.Closer, error) {
 	log = logrus.New()
 	log.SetFormatter(&logrus.TextFormatter{
 		FullTimestamp: true,
@@ -42,6 +42,9 @@ func Init(logFile string, headless bool) (io.Closer, error) {
 		writers = append(writers, io.Discard)
 	}
 	log.SetOutput(io.MultiWriter(writers...))
+	if clearLine != nil {
+		log.AddHook(&lineHook{clear: clearLine})
+	}
 	return file, nil
 }
 
@@ -70,3 +73,19 @@ func Error(args ...interface{}) { log.Error(args...) }
 
 // Errorf 记录 Error 级别日志（格式化）。
 func Errorf(format string, args ...interface{}) { log.Errorf(format, args...) }
+
+// lineHook 在每条日志输出前调用清行回调，使进度条与日志不交错。
+type lineHook struct {
+	clear func()
+}
+
+// Levels 返回所有日志级别。
+func (h *lineHook) Levels() []logrus.Level { return logrus.AllLevels }
+
+// Fire 在日志写出前清除进度条所在行。
+func (h *lineHook) Fire(*logrus.Entry) error {
+	if h.clear != nil {
+		h.clear()
+	}
+	return nil
+}
