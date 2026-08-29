@@ -12,12 +12,14 @@ import (
 
 	"updater/internal/config"
 	"updater/internal/logger"
+	"updater/internal/ui"
 	"updater/pkg/winutil"
 )
 
 // ExecuteUpdate 执行 update 阶段：自检警报 → 备份 → 清理 → 拷贝（顺序不可颠倒）。
 // 返回实际使用的备份目录（备份未启用时为空字符串）。
-func ExecuteUpdate(upd *config.Update) (string, error) {
+func ExecuteUpdate(upd *config.Update, prog *ui.Progress) (string, error) {
+	logger.Infof("update stage started: source=%s target=%s cleanBeforeCopy=%v backupEnabled=%v", upd.Source, upd.Target, *upd.CleanBeforeCopy, upd.Backup.Enabled)
 	self, _ := os.Executable()
 
 	// 1. 自检：updater 自身位于 target 内时仅记录警告，不阻塞流程
@@ -33,14 +35,17 @@ func ExecuteUpdate(upd *config.Update) (string, error) {
 			backupLocation = filepath.Join(filepath.Dir(upd.Target), filepath.Base(upd.Target)+".bak-"+time.Now().Format("20060102150405"))
 			logger.Infof("backup location not set, using %q", backupLocation)
 		}
+		prog.Update("[update] backing up %s -> %s", upd.Target, backupLocation)
 		if err := copyDir(upd.Target, backupLocation, buildExcludeSet(upd.Backup.Exclude, self)); err != nil {
 			return "", fmt.Errorf("backup %s -> %s: %w", upd.Target, backupLocation, err)
 		}
 		logger.Infof("backup completed: %s -> %s", upd.Target, backupLocation)
+		prog.Update("[update] backup done: %s", filepath.Base(backupLocation))
 	}
 
 	// 3. 清理
 	if upd.CleanBeforeCopy == nil || *upd.CleanBeforeCopy {
+		prog.Update("[update] cleaning %s (preserving %d entries)", upd.Target, len(upd.Preserve))
 		if err := cleanTarget(upd.Target, upd.Preserve, self); err != nil {
 			return backupLocation, fmt.Errorf("clean %s: %w", upd.Target, err)
 		}
@@ -48,6 +53,7 @@ func ExecuteUpdate(upd *config.Update) (string, error) {
 	}
 
 	// 4. 拷贝
+	prog.Update("[update] copying %s -> %s", upd.Source, upd.Target)
 	if err := syncSourceToTarget(upd.Source, upd.Target, upd.Preserve); err != nil {
 		return backupLocation, fmt.Errorf("copy %s -> %s: %w", upd.Source, upd.Target, err)
 	}
