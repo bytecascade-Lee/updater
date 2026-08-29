@@ -41,8 +41,11 @@ wait  →  update  →  launch  →  （失败时 rollback）
     "target": "C:/app",               // 当前安装路径
     "preserve": ["C:/app/data"],      // 更新时保留的路径（文件/目录）
     "cleanBeforeCopy": true,          // 复制前清理目标目录
-    "backup": true,                   // 是否备份
-    "backupLocation": "C:/backups"    // 备份存放位置
+    "backup": {
+      "enabled": true,                // 是否备份
+      "location": "D:/test/temp-bakup",  // 备份位置
+      "exclude": ["D:/test/temp/data"]   // 排除路径（文件/目录）
+    }
   },
   "launch": {
     "execution": {

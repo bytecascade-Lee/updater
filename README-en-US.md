@@ -42,8 +42,11 @@ wait  →  update  →  launch  →  (rollback on failure)
     "target": "C:/app",               // Current install path
     "preserve": ["C:/app/data"],      // Paths to preserve during update (files/dirs)
     "cleanBeforeCopy": true,          // Clean target before copying
-    "backup": true,                   // Enable backup
-    "backupLocation": "C:/backups"    // Backup destination
+    "backup": {
+      "enabled": true,                // Enable backup
+      "location": "D:/test/temp-bakup",  // Backup location
+      "exclude": ["D:/test/temp/data"]   // Paths to exclude during backup (files/dirs)
+    }
   },
   "launch": {
     "execution": {
