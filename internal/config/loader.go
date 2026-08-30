@@ -30,23 +30,19 @@ func Load(path string) (*Config, error) {
 // applyDefaults 填充文档规定的默认值。
 func (c *Config) applyDefaults() {
 	if c.Wait.Timeout == nil {
-		v := 5000
-		c.Wait.Timeout = &v
+		c.Wait.Timeout = new(5000)
 	}
 	if c.Wait.Interval == nil {
-		v := 250
-		c.Wait.Interval = &v
+		c.Wait.Interval = new(250)
 	}
 	if c.Update.CleanBeforeCopy == nil {
-		v := true
-		c.Update.CleanBeforeCopy = &v
+		c.Update.CleanBeforeCopy = new(true)
 	}
 	if c.Launch.Execution.Mode == "" {
 		c.Launch.Execution.Mode = "direct"
 	}
 	if c.Rollback.MaxAttempts == nil {
-		v := 1
-		c.Rollback.MaxAttempts = &v
+		c.Rollback.MaxAttempts = new(1)
 	}
 }
 
@@ -66,9 +62,6 @@ func (c *Config) Validate() error {
 	}
 	if c.Update.Target == "" {
 		return errors.New("update.target is required")
-	}
-	if len(c.Update.Preserve) == 0 {
-		return errors.New("update.preserve must be a non-empty array of absolute paths")
 	}
 	if c.Launch.Execution.Path == "" {
 		return errors.New("launch.execution.path is required")
