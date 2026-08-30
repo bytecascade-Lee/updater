@@ -16,15 +16,13 @@ import (
 )
 
 // 版本与构建信息由构建脚本通过 ldflags 注入：
-//
-//	go build -ldflags="-X main.Version=v0.1.0 -X main.BuildTime=2026-08-29_14:00:00 -X main.GitCommit=abc1234 -X main.GitCommitCount=23 -X main.GitCommitTime=2026-08-29_13:00:00 -X main.GitBranch=master" ...
 var (
-	Version        = "dev"
+	Version        = "0.1.0-dev"
 	BuildTime      = ""
-	GitCommit      = ""
+	ShortHash      = ""
 	GitCommitCount = ""
 	GitCommitTime  = ""
-	GitBranch      = ""
+	Branch         = ""
 )
 
 func main() {
@@ -114,13 +112,13 @@ func buildInfoJSON() string {
 		count = n
 	}
 	info := map[string]interface{}{
-		"version":     cleanVersion(),
-		"fullVersion": strings.TrimPrefix(Version, "v"),
-		"buildTime":   BuildTime,
-		"gitCommit":   GitCommit,
-		"commitCount": count,
-		"commitTime":  GitCommitTime,
-		"branch":      GitBranch,
+		"version":        cleanVersion(),
+		"fullVersion":    strings.TrimPrefix(Version, "v"),
+		"buildTime":      BuildTime,
+		"shortHash":      ShortHash,
+		"gitCommitCount": count,
+		"gitCommitTime":  GitCommitTime,
+		"branch":         Branch,
 	}
 	data, err := json.MarshalIndent(info, "", "  ")
 	if err != nil {

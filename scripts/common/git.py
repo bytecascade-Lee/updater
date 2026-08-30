@@ -106,8 +106,8 @@ def get_commit_count(cwd: Optional[Path] = None) -> int:
     return int(output)
 
 def get_head_commit_time(cwd: Optional[Path] = None) -> str:
-    """获取 HEAD 提交的提交时间（committer date），格式 YYYY-MM-DD_HH:MM:SS"""
-    return git(["log", "-1", "--format=%cd", "--date=format:%Y-%m-%d_%H:%M:%S"], cwd)
+    """获取 HEAD 提交的提交时间（committer date），ISO 8601 格式"""
+    return git(["log", "-1", "--format=%cd", "--date=iso8601-strict"], cwd)
 
 
 def get_latest_tag(cwd: Optional[Path] = None) -> Optional[str]:

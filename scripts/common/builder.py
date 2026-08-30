@@ -43,8 +43,8 @@ def go_build(
     out_dir = out_dir or project_root
     artifact = out_dir / f"updater-{artifact_version}-windows-{target}.exe"
 
-    build_time = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-    git_commit = git.get_head_hash(short=True, cwd=project_root)
+    build_time = datetime.datetime.now().astimezone().isoformat()
+    short_hash = git.get_head_hash(short=True, cwd=project_root)
     git_count = git.get_commit_count(cwd=project_root)
     git_time = git.get_head_commit_time(cwd=project_root)
     git_branch = git.get_branch(cwd=project_root)
@@ -56,7 +56,7 @@ def go_build(
     ldflags = (
         f"-X main.Version={version_str} "
         f"-X main.BuildTime={build_time} "
-        f"-X main.GitCommit={git_commit} "
+        f"-X main.ShortHash={short_hash} "
         f"-X main.GitCommitCount={git_count} "
         f"-X main.GitCommitTime={git_time} "
         f"-X main.GitBranch={git_branch} "
