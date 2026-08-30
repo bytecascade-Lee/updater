@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## 0.1.2
+
+### Changed
+
+- 重构构建信息字段命名与 JSON 输出：`GitCommit` → `ShortHash`，时间戳格式改为 ISO 8601，`buildInfoJSON` 新增 `branch` 字段，新增 `build-info-example.json` 示例文件
+- 自动更新清单 `latest.json` 格式调整：`schemaVersion` 从字符串改为数字，`publishTimestamp`（毫秒时间戳）改为 `publishDate`（ISO 8601 含时区）
+
+---
+
 ## 0.1.1
 
 ### Changed

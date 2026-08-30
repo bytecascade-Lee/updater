@@ -1,6 +1,31 @@
 # 版本发布说明
 
-> 如有问题或建议，欢迎在 [Issue](https://github.com/bytecascade-Lee/updater/issues) 区提出。
+如有问题或建议，欢迎在 [Issue](https://github.com/bytecascade-Lee/updater/issues) 区提出。
+
+---
+
+## 0.1.2
+
+### 版本亮点
+
+统一了构建信息与自动更新清单的时间格式，全部采用 ISO 8601 标准，便于解析和对比。
+
+### 体验改进
+
+- 构建信息（`--build-info`）和自动更新清单（`latest.json`）的时间字段统一为 ISO 8601 标准格式，不再使用毫秒时间戳
+- 新增 `build-info-example.json` 示例文件，方便集成方参考字段结构
+
+### 重要修复
+
+暂无。
+
+### 升级注意
+
+自动更新清单 `schemaVersion` 从字符串改为数字，`publishTimestamp` 改名为 `publishDate`。如有自定义客户端解析 `latest-*.json`，需同步适配。
+
+### 已知问题
+
+暂无。
 
 ---
 
