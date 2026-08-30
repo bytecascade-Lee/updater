@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/sirupsen/logrus"
 )
@@ -28,6 +29,14 @@ func Init(logFile string, headless bool, clearLine func()) (io.Closer, error) {
 	writers := make([]io.Writer, 0, 2)
 	var file *os.File
 	if logFile != "" {
+		// 确保日志文件所在的目录存在
+		dir := filepath.Dir(logFile)
+		if dir != "" && dir != "." {
+			if err := os.MkdirAll(dir, 0755); err != nil {
+				return nil, fmt.Errorf("create log directory %q: %w", dir, err)
+			}
+		}
+
 		f, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
 			return nil, fmt.Errorf("open log file %q: %w", logFile, err)
