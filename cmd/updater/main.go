@@ -38,25 +38,35 @@ func main() {
 
 	args := os.Args[1:]
 	if len(args) == 0 {
+		ui.SetupCLI()
 		usage(os.Stderr)
+		ui.Teardown()
 		exitCode = 1
 		return
 	}
 	switch args[0] {
 	case "--help", "-h":
+		ui.SetupCLI()
 		usage(os.Stdout)
+		ui.Teardown()
 		return
 	case "--version", "-v":
+		ui.SetupCLI()
 		fmt.Fprintln(os.Stdout, cleanVersion())
+		ui.Teardown()
 		return
 	case "--build-info":
+		ui.SetupCLI()
 		fmt.Fprintln(os.Stdout, buildInfoJSON())
+		ui.Teardown()
 		return
 	}
 
 	cfg, err := config.Load(args[0])
 	if err != nil {
+		ui.SetupCLI()
 		fmt.Fprintf(os.Stderr, "config error: %v\n", err)
+		ui.Teardown()
 		exitCode = 1
 		return
 	}
