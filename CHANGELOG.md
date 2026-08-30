@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## 0.1.1
+
+### Changed
+
+- 重构 `ui/console.go` 控制台策略并新增 `SetupCLI`：CLI 命令（`-v`/`-h`/`--build-info`/无参数/配置错误）在 stdout 为有效管道/重定向时不触碰窗口（Rust 捕获场景），否则优先 `AttachConsole(-1)` 复用父终端，双击等无父控制台场景 `AllocConsole` 弹窗并在 `Teardown` 时等待按键退出
+- 调整 `ui.Setup` 升级流程：`headless=false` 时优先附加父终端复用，失败才 `AllocConsole` 弹独立窗口；`headless=true` 保持完全静默且不触碰标准句柄
+- `main.go` 各 CLI 分支接入 `SetupCLI`/`Teardown`，保证 `-H windowsgui` 下 `-v`/`-h`/`--build-info`/无参数/配置错误输出可达
+- 日志模块 `logger` 在打开日志文件前自动创建父目录，避免因目录缺失导致 `OpenFile` 失败
+- 配置加载模块 `config` 使用 `new(T)` 简化默认值赋值，移除 `update.preserve` 非空校验，允许空数组
+
+---
+
 ## 0.1.0
 
 ### Added
