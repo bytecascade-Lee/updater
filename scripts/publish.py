@@ -235,8 +235,8 @@ def build_latest_json(release_version: str, assets: dict, make_url) -> dict:
         }
     return {
         "version": release_version,
-        "schemaVersion": "1",
-        "publishTimestamp": int(time.time() * 1000),
+        "schemaVersion": 1,
+        "publishDate": datetime.datetime.now().astimezone().isoformat(),
         "windows": windows,
     }
 

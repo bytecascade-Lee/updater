@@ -1,7 +1,7 @@
 {
     "version": "",
-    "schemaVersion": "1",
-    "publishTimestamp": "ms",
+    "schemaVersion": 1,
+    "publishDate": "ISO 8601",
     "windows": {
         "x86_64": {
             "url": "",
