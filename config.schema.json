@@ -1,0 +1,219 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "updater 配置文件 (config.json)",
+  "description": "更新器 JSON 配置的编写辅助 Schema（draft-07）。字段、必填、默认值与绝对路径约束均对齐 internal/config/loader.go 的 applyDefaults()/Validate() 实现；interpreted 模式对 interpreter 的约束对齐 runner 启动逻辑。提示：本 Schema 采用严格模式（additionalProperties: false），未列出的键会被标红，以捕获拼写错误。编辑器关联方式：VS Code 在 settings.json 配置 json.schemas 的 fileMatch 指向本文件，或在配置 JSON 顶部内联 \"$schema\"（loader 解析时忽略未知键，不影响运行）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "update", "launch"],
+  "properties": {
+    "version": {
+      "description": "配置文件版本。当前仅支持 1，可写整数 1 或整数字符串（如 \"1\"）；大于 1 需要升级更新器，其他值非法。必填。",
+      "anyOf": [
+        { "type": "integer", "const": 1 },
+        { "type": "string", "pattern": "^\\s*\\+?0*1\\s*$" }
+      ]
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "更新器进程自身的 UI 与日志行为。可整体省略。",
+      "properties": {
+        "headless": {
+          "type": "boolean",
+          "default": false,
+          "description": "无界面模式：true 时不显示进度 UI。"
+        },
+        "logFile": {
+          "$ref": "#/definitions/emptyOrWindowsAbsolutePath",
+          "description": "更新器自身日志文件路径；空串（或省略）表示不写日志，非空必须是 Windows 绝对路径。"
+        }
+      }
+    },
+    "wait": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "等待旧进程退出的策略。可整体省略。",
+      "properties": {
+        "pid": {
+          "type": "integer",
+          "default": -1,
+          "description": "等待退出的旧进程 PID；0 或 -1 表示跳过等待阶段。"
+        },
+        "timeout": {
+          "type": ["integer", "null"],
+          "default": 5000,
+          "description": "等待超时（毫秒）；null 等价省略，默认 5000。"
+        },
+        "forceKill": {
+          "type": "boolean",
+          "default": false,
+          "description": "超时后是否强制结束旧进程。"
+        },
+        "interval": {
+          "type": ["integer", "null"],
+          "default": 250,
+          "description": "轮询间隔（毫秒）；null 等价省略，默认 250。"
+        }
+      }
+    },
+    "update": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "target"],
+      "description": "文件替换核心操作。必填。",
+      "properties": {
+        "source": {
+          "$ref": "#/definitions/windowsAbsolutePath",
+          "description": "必填：新版本文件来源，必须是 Windows 绝对路径，会被复制到 target。"
+        },
+        "target": {
+          "$ref": "#/definitions/windowsAbsolutePath",
+          "description": "必填：安装目标文件，必须是 Windows 绝对路径，将被 source 覆盖。"
+        },
+        "preserve": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/windowsAbsolutePath" },
+          "description": "覆盖前需要保留的额外路径列表，每一项必须是 Windows 绝对路径。"
+        },
+        "cleanBeforeCopy": {
+          "type": ["boolean", "null"],
+          "default": true,
+          "description": "复制前是否清空目标目录；null 等价省略，默认 true。"
+        },
+        "backup": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "备份配置。可整体省略。",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "替换前是否备份被覆盖文件。"
+            },
+            "location": {
+              "$ref": "#/definitions/emptyOrWindowsAbsolutePath",
+              "description": "备份目录；空串（或省略）时自动生成，非空必须是 Windows 绝对路径，且不能位于 target 目录内部。"
+            },
+            "exclude": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "备份排除项。"
+            }
+          }
+        }
+      }
+    },
+    "launch": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "新进程启动配置。必填。",
+      "properties": {
+        "execution": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path"],
+          "description": "执行机制。",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": ["direct", "interpreted"],
+              "default": "direct",
+              "description": "启动方式：\"direct\" 直接执行 path，此时 interpreter 被忽略；\"interpreted\" 用 interpreter + path 组合启动。省略时默认 direct。"
+            },
+            "path": {
+              "$ref": "#/definitions/windowsAbsolutePath",
+              "description": "必填：可执行文件或脚本路径，必须是 Windows 绝对路径。"
+            },
+            "interpreter": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "仅 interpreted 模式使用：解释器及其固定参数，会拼在 path 之前组成完整命令（如 [\"python\", \"-u\"]）。direct 模式下该字段被忽略，可直接省略；interpreted 模式下不得为空或缺失。"
+            }
+          },
+          "if": {
+            "properties": { "mode": { "const": "interpreted" } },
+            "required": ["mode"]
+          },
+          "then": {
+            "required": ["interpreter"],
+            "properties": { "interpreter": { "minItems": 1 } }
+          }
+        },
+        "context": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "运行时环境。可整体省略。",
+          "properties": {
+            "workspace": {
+              "$ref": "#/definitions/emptyOrWindowsAbsolutePath",
+              "description": "子进程工作目录；空串（或省略）时默认取 path 所在目录，非空必须是 Windows 绝对路径。"
+            },
+            "args": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "传给目标进程的额外参数。"
+            },
+            "env": {
+              "type": "object",
+              "additionalProperties": { "type": "string" },
+              "description": "附加环境变量（KEY=VALUE），覆盖继承环境中同名项。"
+            }
+          }
+        },
+        "lifecycle": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "更新器驻留行为。可整体省略。",
+          "properties": {
+            "stayAlive": {
+              "type": "integer",
+              "default": 0,
+              "description": "0=启动后分离退出；-1=驻留并无限等待子进程；>0=守护至多 N 毫秒后更新器自行退出（不杀子进程）。"
+            },
+            "captureOutput": {
+              "type": "boolean",
+              "default": false,
+              "description": "驻留模式下接管子进程 stdout/stderr 写入日志；仅 stayAlive != 0 时生效。"
+            }
+          }
+        }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "失败恢复策略。可整体省略。",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "更新失败后是否回滚。"
+        },
+        "fallbackExecutable": {
+          "$ref": "#/definitions/emptyOrWindowsAbsolutePath",
+          "description": "回滚时启动的备用可执行文件；空串（或省略）表示不使用，非空必须是 Windows 绝对路径。"
+        },
+        "maxAttempts": {
+          "type": ["integer", "null"],
+          "default": 1,
+          "description": "失败重试次数；null 等价省略，默认 1。"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "windowsAbsolutePath": {
+      "type": "string",
+      "description": "Windows 绝对路径：盘符形式（C:\\xxx 或 C:/xxx）或 UNC 网络路径（\\\\server\\share\\xxx）。",
+      "pattern": "^(?:[a-zA-Z]:[\\\\/]|\\\\\\\\)"
+    },
+    "emptyOrWindowsAbsolutePath": {
+      "type": "string",
+      "description": "空串（表示不使用）或 Windows 绝对路径；loader 对空串放行、仅校验非空时须为绝对路径。",
+      "anyOf": [
+        { "const": "" },
+        { "$ref": "#/definitions/windowsAbsolutePath" }
+      ]
+    }
+  }
+}
