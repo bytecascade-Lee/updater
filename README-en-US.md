@@ -25,7 +25,41 @@ wait  →  update  →  launch  →  (rollback on failure)
 `updater` accepts a JSON configuration file as input. Field structure, required fields and defaults are governed by the JSON Schema at the repo root:
 
 - **Example**: [`example.json`](./example.json) — a sample configuration with the full field set
-- **JSON Schema**: [`config.schema.json`](./config.schema.json) — field definitions and validation rules. Associating it with your editor gives you field hints and validation while authoring (VS Code: point `json.schemas` in `settings.json` at the file, or inline `"$schema": "./config.schema.json"` at the top of your config JSON)
+- **JSON Schema**: [`config.schema.json`](./config.schema.json) — field definitions and validation rules. See below to associate the schema with your editor for hints and validation while authoring
+
+### Associating the Schema in an Editor
+
+Pick any one of the editors below. If you'd rather not configure an editor, simply inline `"$schema": "./config.schema.json"` at the top of your config JSON — editors with JSON Schema support pick it up automatically (the root `example.json` already carries this reference).
+
+1. **GoLand** (JetBrains): open `Settings → Languages & Frameworks → Schemas and DTDs → JSON Schema Mappings`, click `+` to create a mapping: set `Schema file or URL` to the `config.schema.json` path and add your config file pattern (e.g. `config*.json`) under `File path patterns`.
+
+2. **Zed**: configure JSON Schema mappings for the JSON language server in Zed's `settings.json` (paths starting with `./` resolve against the project root):
+
+    ```json
+    {
+      "lsp": {
+        "json-language-server": {
+          "settings": {
+            "json": {
+              "schemas": [
+                { "fileMatch": ["config*.json"], "url": "./config.schema.json" }
+              ]
+            }
+          }
+        }
+      }
+    }
+    ```
+
+3. **VS Code**: configure `json.schemas` in VS Code's `settings.json` (narrow `fileMatch` to your actual config file name if needed):
+
+    ```json
+    {
+      "json.schemas": [
+        { "fileMatch": ["config*.json"], "url": "./config.schema.json" }
+      ]
+    }
+    ```
 
 ## Usage
 

@@ -24,7 +24,41 @@ wait  →  update  →  launch  →  （失败时 rollback）
 `updater` 接受一个 JSON 配置文件作为输入。字段结构、必填项与默认值以项目根目录的 Schema 为准，完整字段参考仓库中的示例文件：
 
 - **参考样例**：[`example.json`](./example.json) —— 完整字段的示例配置
-- **JSON Schema**：[`config.schema.json`](./config.schema.json) —— 字段定义与校验规则；在编辑器中关联后编写配置可获得字段提示与校验（VS Code：在 `settings.json` 的 `json.schemas` 中指向该文件，或在配置 JSON 顶部内联 `"$schema": "./config.schema.json"`）
+- **JSON Schema**：[`config.schema.json`](./config.schema.json) —— 字段定义与校验规则；关联编辑器后编写配置可获得字段提示与校验，关联方式见下文
+
+### 在编辑器中关联 Schema
+
+三种编辑器任选其一。若不想做任何编辑器配置，也可以直接在配置 JSON 顶部内联 `"$schema": "./config.schema.json"`，支持 JSON Schema 的编辑器会自动识别（根目录 `example.json` 已内置该引用）。
+
+1. **GoLand**（JetBrains）：打开 `Settings → Languages & Frameworks → Schemas and DTDs → JSON Schema Mappings`，点击 `+` 新建映射：`Schema file or URL` 填写 `config.schema.json` 路径，`File path patterns` 添加你的配置文件模式（如 `config*.json`）。
+
+2. **Zed**：在 Zed 的 `settings.json` 中为 JSON 语言服务器配置 schemas（`./` 开头相对项目根目录解析）：
+
+    ```json
+    {
+      "lsp": {
+        "json-language-server": {
+          "settings": {
+            "json": {
+              "schemas": [
+                { "fileMatch": ["config*.json"], "url": "./config.schema.json" }
+              ]
+            }
+          }
+        }
+      }
+    }
+    ```
+
+3. **VS Code**：在 VS Code 的 `settings.json` 中配置 `json.schemas`（fileMatch 可按你的实际配置文件名收窄）：
+
+    ```json
+    {
+      "json.schemas": [
+        { "fileMatch": ["config*.json"], "url": "./config.schema.json" }
+      ]
+    }
+    ```
 
 ## 使用方式
 
