@@ -37,3 +37,6 @@ Desktop.ini
 *.exe
 *.dll
 *.exe~
+
+# Release files
+/release/
