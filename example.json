@@ -1,45 +1,46 @@
 {
-  "version": 1,
-  "runtime": {
-    "headless": false,
-    "logFile": ""
-  },
-  "wait": {
-    "pid": 1234,
-    "timeout": 10000,
-    "forceKill": true,
-    "interval": 500
-  },
-  "update": {
-    "source": "",
-    "target": "",
-    "preserve": [],
-    "cleanBeforeCopy": true,
-    "backup": {
-      "enabled": true,
-      "location": "",
-      "exclude": []
-    }
-  },
-  "launch": {
-    "execution": {
-      "mode": "direct",
-      "path": "",
-      "interpreter": []
+    "$schema": "./config.schema.json",
+    "version": 1,
+    "runtime": {
+        "headless": false,
+        "logFile": ""
     },
-    "context": {
-      "workspace": "",
-      "args": [],
-      "env": {}
+    "wait": {
+        "pid": 1234,
+        "timeout": 10000,
+        "forceKill": true,
+        "interval": 500
     },
-    "lifecycle": {
-      "stayAlive": -1,
-      "captureOutput": true
+    "update": {
+        "source": "",
+        "target": "",
+        "preserve": [],
+        "cleanBeforeCopy": true,
+        "backup": {
+            "enabled": true,
+            "location": "",
+            "exclude": []
+        }
+    },
+    "launch": {
+        "execution": {
+            "mode": "",
+            "path": "",
+            "interpreter": []
+        },
+        "context": {
+            "workspace": "",
+            "args": [],
+            "env": {}
+        },
+        "lifecycle": {
+            "stayAlive": -1,
+            "captureOutput": true
+        }
+    },
+    "rollback": {
+        "enabled": true,
+        "fallbackExecutable": "",
+        "maxAttempts": 2
     }
-  },
-  "rollback": {
-    "enabled": true,
-    "fallbackExecutable": "",
-    "maxAttempts": 2
-  }
 }
