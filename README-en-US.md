@@ -22,55 +22,10 @@ wait  →  update  →  launch  →  (rollback on failure)
 
 ## Configuration
 
-`updater` accepts a JSON configuration file. Full schema:
+`updater` accepts a JSON configuration file as input. Field structure, required fields and defaults are governed by the JSON Schema at the repo root:
 
-```jsonc
-{
-  "version": 1,
-  "runtime": {
-    "headless": false,        // Headless mode (no UI output)
-    "logFile": "D:/updater.log"  // Log file path
-  },
-  "wait": {
-    "pid": 1234,                      // Old process PID; -1 or 0 to skip waiting
-    "timeout": 10000,                 // Wait timeout (ms)
-    "forceKillAfterTimeout": true,    // Force-kill on timeout
-    "checkInterval": 300              // Polling interval (ms)
-  },
-  "update": {
-    "source": "C:/new_app",           // New version source path
-    "target": "C:/app",               // Current install path
-    "preserve": ["C:/app/data"],      // Paths to preserve during update (files/dirs)
-    "cleanBeforeCopy": true,          // Clean target before copying
-    "backup": {
-      "enabled": true,                // Enable backup
-      "location": "D:/test/temp-bakup",  // Backup location
-      "exclude": ["D:/test/temp/data"]   // Paths to exclude during backup (files/dirs)
-    }
-  },
-  "launch": {
-    "execution": {
-      "mode": "direct",               // "direct" or "interpreted"
-      "path": "app.exe",              // Executable path
-      "interpreter": ["pwsh.exe"]     // Interpreter (used in interpreted mode)
-    },
-    "context": {
-      "workspace": "C:/app",          // Working directory (defaults to exe parent)
-      "args": ["--port", "8080"],     // Launch arguments
-      "env": { "RUST_LOG": "INFO" }   // Environment variables
-    },
-    "lifecycle": {
-      "stayAlive": 0,                 // 0=detached, >0=guard ms, <0=infinite resident
-      "captureOutput": false          // Capture stdout/stderr
-    }
-  },
-  "rollback": {
-    "enabled": true,
-    "fallbackExecutable": "C:/app/old_app.exe",
-    "maxAttempts": 2
-  }
-}
-```
+- **Example**: [`example.json`](./example.json) — a sample configuration with the full field set
+- **JSON Schema**: [`config.schema.json`](./config.schema.json) — field definitions and validation rules. Associating it with your editor gives you field hints and validation while authoring (VS Code: point `json.schemas` in `settings.json` at the file, or inline `"$schema": "./config.schema.json"` at the top of your config JSON)
 
 ## Usage
 
@@ -125,27 +80,7 @@ uv run python scripts/release_ci.py build --target x86_64
 
 ## Update Manifest
 
-A `latest.json` is generated on release for clients to check for updates:
-
-```json
-{
-    "version": "1.0.0",
-    "schemaVersion": "1",
-    "publishTimestamp": 1724937600000,
-    "windows": {
-        "x86_64": {
-            "url": "https://github.com/bytecascade-Lee/releases/download/v1.0.0/updater-1.0.0-windows-x86_64.exe",
-            "sha256": "...",
-            "size": 12345678
-        },
-        "arm64": {
-            "url": "https://github.com/bytecascade-Lee/releases/download/v1.0.0/updater-1.0.0-windows-arm64.exe",
-            "sha256": "...",
-            "size": 12345678
-        }
-    }
-}
-```
+A `latest.json` is generated on release for clients to check for updates. Field structure and format follow [`latest-example.json`](./latest-example.json) at the repo root.
 
 ## Project Structure
 

@@ -21,55 +21,10 @@ wait  →  update  →  launch  →  （失败时 rollback）
 
 ## 配置格式
 
-`updater` 接受一个 JSON 配置文件作为输入，完整字段如下：
+`updater` 接受一个 JSON 配置文件作为输入。字段结构、必填项与默认值以项目根目录的 Schema 为准，完整字段参考仓库中的示例文件：
 
-```jsonc
-{
-  "version": 1,
-  "runtime": {
-    "headless": false,        // 无头模式（无 UI 输出）
-    "logFile": "D:/updater.log"  // 日志文件路径
-  },
-  "wait": {
-    "pid": 1234,                      // 旧进程 PID；-1 或 0 跳过等待
-    "timeout": 10000,                 // 等待超时（ms）
-    "forceKillAfterTimeout": true,    // 超时后强制终止
-    "checkInterval": 300              // 轮询间隔（ms）
-  },
-  "update": {
-    "source": "C:/new_app",           // 新版本文件路径
-    "target": "C:/app",               // 当前安装路径
-    "preserve": ["C:/app/data"],      // 更新时保留的路径（文件/目录）
-    "cleanBeforeCopy": true,          // 复制前清理目标目录
-    "backup": {
-      "enabled": true,                // 是否备份
-      "location": "D:/test/temp-bakup",  // 备份位置
-      "exclude": ["D:/test/temp/data"]   // 排除路径（文件/目录）
-    }
-  },
-  "launch": {
-    "execution": {
-      "mode": "direct",               // "direct" 或 "interpreted"
-      "path": "app.exe",              // 可执行文件路径
-      "interpreter": ["pwsh.exe"]     // 解释器（interpreted 模式使用）
-    },
-    "context": {
-      "workspace": "C:/app",          // 工作目录（默认为 exe 所在目录）
-      "args": ["--port", "8080"],     // 启动参数
-      "env": { "RUST_LOG": "INFO" }   // 环境变量
-    },
-    "lifecycle": {
-      "stayAlive": 0,                 // 0=分离, >0=守护ms, <0=无限驻留
-      "captureOutput": false          // 是否捕获 stdout/stderr
-    }
-  },
-  "rollback": {
-    "enabled": true,
-    "fallbackExecutable": "C:/app/old_app.exe",
-    "maxAttempts": 2
-  }
-}
-```
+- **参考样例**：[`example.json`](./example.json) —— 完整字段的示例配置
+- **JSON Schema**：[`config.schema.json`](./config.schema.json) —— 字段定义与校验规则；在编辑器中关联后编写配置可获得字段提示与校验（VS Code：在 `settings.json` 的 `json.schemas` 中指向该文件，或在配置 JSON 顶部内联 `"$schema": "./config.schema.json"`）
 
 ## 使用方式
 
@@ -122,27 +77,7 @@ uv run python scripts/release_ci.py build --target x86_64
 
 ## 自动更新清单
 
-发布时自动生成 `latest.json`，供客户端检查更新：
-
-```json
-{
-    "version": "1.0.0",
-    "schemaVersion": "1",
-    "publishTimestamp": 1724937600000,
-    "windows": {
-        "x86_64": {
-            "url": "https://github.com/bytecascade-Lee/releases/download/v1.0.0/updater-1.0.0-windows-x86_64.exe",
-            "sha256": "...",
-            "size": 12345678
-        },
-        "arm64": {
-            "url": "https://github.com/bytecascade-Lee/releases/download/v1.0.0/updater-1.0.0-windows-arm64.exe",
-            "sha256": "...",
-            "size": 12345678
-        }
-    }
-}
-```
+发布时自动生成 `latest.json`，供客户端检查更新。清单的字段结构以根目录 [`latest-example.json`](./latest-example.json) 为准。
 
 ## 项目结构
 
